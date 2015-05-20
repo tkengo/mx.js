@@ -7,17 +7,32 @@ var Matrix = function(elements) {
 };
 
 /**
- * Create a new Matrix object. We can pass matrix size and initial value or array object directly.
+ * Create a new matrix object. We can pass matrix size and initial value or array object directly.
  *
- * First, `Matrix.create(3, 3, 1)` generates a new 3x3 matrix and all elements in it will be '1'.
+ * First, `Matrix.create(3, 3, 1)` generates a new 3x3 matrix and all elements in it will be '1':
+ *  -------
+ * | 1 1 1 |
+ * | 1 1 1 |
+ * | 1 1 1 |
+ *  -------
  * Default value for the third argument is zero, so we can generate a Matrix that has zero value in
  * all of elements if the third argument is ommited.
  * If zero or negative value is passed to `rows` or `cols` arguments, this method returns empty
  * Matrix.
  *
  * Second, `Matrix.create([ 1, 2, 3 ])` generates a new 1x3 matrix and its elements have 1, 2, 3
- * values on the first row, Or we can also generate 3x2 matrix by passing 2 dims array like this
+ * values on the first row:
+ *  -------
+ * | 1 2 3 |
+ *  -------
+ *
+ * Or we can also generate 3x2 matrix by passing 2 dims array like this
  * `Matrix.create([ [ 1, 2 ], [ 3, 4 ], [ 5, 6 ] ])`.
+ *  -----
+ * | 1 2 |
+ * | 3 4 |
+ * | 5 6 |
+ *  -----
  */
 Matrix.create = function(rows, cols, initVal) {
   var elements = [];
@@ -45,21 +60,69 @@ Matrix.create = function(rows, cols, initVal) {
   return new Matrix(elements);
 };
 
+/**
+ * Create a new matrix object. All of elements of the matrix is zero. We must specify the matrix
+ * size with `rows` and `cols`. For example, `Matrix.zeros(3, 4)` generates 3x4 matrix follow:
+ *  ---------
+ * | 0 0 0 0 |
+ * | 0 0 0 0 |
+ * | 0 0 0 0 |
+ *  ---------
+ *
+ * If cols argument is ommited such like `Matrix.zeros(3)`, this method generates squrea matrix:
+ *  -------
+ * | 0 0 0 |
+ * | 0 0 0 |
+ * | 0 0 0 |
+ *  -------
+ */
 Matrix.zeros = function(rows, cols) {
   return Matrix.create(rows, cols || rows, 0);
 };
 
+/**
+ * Create a new matrix object. All of elements of the matrix is 1. We must specify the matrix
+ * size with `rows` and `cols`. For example, `Matrix.ones(3, 4)` generates 3x4 matrix follow:
+ *  ---------
+ * | 1 1 1 1 |
+ * | 1 1 1 1 |
+ * | 1 1 1 1 |
+ *  ---------
+ *
+ * If cols argument is ommited such like `Matrix.ones(3)`, this method generates squrea matrix:
+ *  -------
+ * | 1 1 1 |
+ * | 1 1 1 |
+ * | 1 1 1 |
+ *  -------
+ */
 Matrix.ones = function(rows, cols) {
   return Matrix.create(rows, cols || rows, 1);
 };
 
+/**
+ * Create a new identity matrix object. We must specify the matrix size with `rows` and `cols`.
+ * If cols argument is ommited, this method generates squrea matrix. For example, `Matrix.eye(3)`
+ * is:
+ *  -------
+ * | 1 0 0 |
+ * | 0 1 0 |
+ * | 0 0 1 |
+ *  -------
+ *
+ * And rectangular matrix is generated if rows and cols is not equals. `Matrix.eye(2, 3)` is:
+ *  -------
+ * | 1 0 0 |
+ * | 0 1 0 |
+ *  -------
+ */
 Matrix.eye = function(rows, cols) {
   cols = cols || rows;
   if (rows == cols) {
     return Matrix.diag(1, rows);
   } else {
-    var m = Matrix.create(rows, cols, 0);
-    for (var i = 0, len = Math.min(rows, cols); i < len; ++i) {
+    var m = Matrix.zeros(rows, cols);
+    for (var i = Math.min(rows, cols) - 1; i >= 0; --i) {
         m[i][i] = 1;
     }
     return m;
@@ -303,22 +366,30 @@ Matrix.prototype = {
           this[r][c] *= v;
         }
       }
-      return this;
     } else {
-      var elements = [];
       for (var r = 0, rlen = this.rows; r < rlen; ++r) {
+        for (var c = 0, clen = this.cols; c < clen; ++c) {
+          this[r][c] *= v[r][c];
+        }
+      }
+    }
+    return this;
+  },
+
+  mmul: function(v) {
+    var elements = [];
+    for (var r = 0, rlen = this.rows; r < rlen; ++r) {
         var row = [];
         for (var c = 0, clen = v.cols; c < clen; ++c) {
-          var sum = 0;
-          for (var i = 0, len = this.cols; i < len; ++i) {
-            sum += this[r][i] * v[i][c];
-          }
-          row[c] = sum;
+            var sum = 0;
+            for (var i = 0, len = this.cols; i < len; ++i) {
+                sum += this[r][i] * v[i][c];
+            }
+            row[c] = sum;
         }
         elements[r] = row;
-      }
-      return Matrix.create(elements);
     }
+    return Matrix.create(elements);
   },
 
   div: function(v) {
