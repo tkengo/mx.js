@@ -129,10 +129,28 @@ Matrix.eye = function(rows, cols) {
   }
 };
 
+/**
+ * Create a new diagonal matrix object. We can specify scalar or vector object to `value` arg.
+ * If the scalar value is passed to `value`, all of diagonal elements in the matrix is same value.
+ * For example, `Matrix.diag(2, 3)` generates 3x3 new diagonal matrix:
+ *  -------
+ * | 2 0 0 |
+ * | 0 2 0 |
+ * | 0 0 2 |
+ *  -------
+ *
+ * If the vector is passed to `value`, diagonal elements in the matrix have each elements of the
+ * vector. If `v` is define for `Vector.create([ 2, 5, 3 ])`, `Matrix.diag(v)` generates follow:
+ *  -------
+ * | 2 0 0 |
+ * | 0 5 0 |
+ * | 0 0 3 |
+ *  -------
+ */
 Matrix.diag = function(value, size) {
   if (typeof value == 'number') {
     var m = Matrix.zeros(size);
-    for (var i = 0; i < size; ++i) {
+    for (var i = size - 1; i >= 0; --i) {
       m[i][i] = value;
     }
     return m;
@@ -140,14 +158,23 @@ Matrix.diag = function(value, size) {
     size = size || 0;
     var len = value.length + size;
     var m = Matrix.zeros(len);
-    for (var i = 0; i < len; ++i) {
+    for (var i = len - 1; i >= 0; --i) {
       m[i][i + size] = value[i];
     }
     return m;
   }
 };
 
+/**
+ * Define the prototype of the matrix object. Basically, operation method for matrix object is
+ * destructive method. For example, `add` method was invoked like this `m1.add(m2)` each elements
+ * of the source matrix `m1` will be added value from m2 and changed. We can use `clone` method if
+ * we don't want to effect to source matrix.
+ */
 Matrix.prototype = {
+  /**
+   * Build a string from the matrix for a human.
+   */
   toString: function() {
     var s = '';
     for (var r = 0, rlen = this.rows; r < rlen; ++r) {
