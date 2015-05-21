@@ -176,10 +176,20 @@ Matrix.prototype = {
    * Build a string from the matrix for a human.
    */
   toString: function() {
+    // Find max length in the all of elements in order to align matrix.
+    var maxLength = [];
+    for (var c = 0, clen = this.cols; c < clen; ++c) {
+      maxLength[c] = 0;
+      for (var r = 0, rlen = this.rows; r < rlen; ++r) {
+        maxLength[c] = Math.max((this[r][c] + '').length, maxLength[c]);
+      }
+    }
+
     var s = '';
     for (var r = 0, rlen = this.rows; r < rlen; ++r) {
       for (var c = 0, clen = this.cols; c < clen; ++c) {
-        s += ' ' + this[r][c];
+        s += (new Array(maxLength[c] - (this[r][c] + '').length + 2)).join(' ');
+        s += this[r][c];
       }
       s += "\n";
     }
