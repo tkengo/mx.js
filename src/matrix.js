@@ -3,7 +3,10 @@
  * argument must be 2 dims array.
  */
 var Matrix = function(elements) {
-  this.set(elements);
+  this.rows = 0;
+  this.cols = 0;
+
+  this.set(elements || []);
 };
 
 /**
@@ -35,13 +38,14 @@ var Matrix = function(elements) {
  *  -----
  */
 Matrix.create = function(rows, cols, initVal) {
-  var elements = [];
+  var elements;
 
   if (typeof rows == 'number') {
     if (rows > 0 && cols > 0) {
       initVal = initVal || 0;
+      elements = new Array(rows);
       for (var r = rows - 1; r >= 0; --r) {
-        var row = [];
+        var row = new Array(cols);
         for (var c = cols - 1; c >= 0; --c) {
           row[c] = initVal;
         }
@@ -166,10 +170,14 @@ Matrix.diag = function(value, size) {
 };
 
 /**
- * Define the prototype of the matrix object. Basically, operation method for matrix object is
- * destructive method. For example, `add` method was invoked like this `m1.add(m2)` each elements
- * of the source matrix `m1` will be added value from m2 and changed. We can use `clone` method if
- * we don't want to effect to source matrix.
+ * Define the prototype of the matrix object.
+ *
+ * Basically, operation method for matrix object is destructive. For example, `add` method was
+ * invoked like this `m1.add(m2)` each elements of the source matrix `m1` will be added value from
+ * m2 and changed. We can use `clone` method if we don't want to effect to source matrix.
+ *
+ * Many methods in the matrix return self, so we can do method chain such like this:
+ * var sum = m1.add(x).pow(2).sum();
  */
 Matrix.prototype = {
   /**
@@ -196,27 +204,78 @@ Matrix.prototype = {
     return s;
   },
 
+  /**
+   * Output this matrix to the console log.
+   */
   disp: function() {
     console.log(this.toString());
   },
 
+  /**
+   * Copy this matrix object.
+   */
   clone: function() {
     return new Matrix(this.toArray());
   },
 
+  /**
+   * Translate this matrix object to the 2 dims array. For example, if we have the follow matrix:
+   *  -------
+   * | 2 1 2 |
+   * | 1 5 1 |
+   * | 4 0 3 |
+   *  -------
+   * returns the follow array from the matrix by calling `toArray` method:
+   * [ [ 2, 1, 2 ],
+   *   [ 1, 5, 1 ],
+   *   [ 4, 0, 3 ] ]
+   *
+   * The matrix is not changed even if a value in the array is changed because the array is copied
+   * from the source matrix.
+   */
   toArray: function() {
-    var elements = [];
-    for (var r = 0, len = this.rows; r < len; ++r) {
+    var elements = new Array(this.rows);
+    for (var r = this.rows - 1; r >= 0; --r) {
       elements[r] = this[r].concat();
     }
     return elements;
   },
 
+  toVector: function(type) {
+    type = type || Vector.COL;
+
+    var vectors, r, elements;
+    if (type === Vector.COL) {
+      vectors = new Array(this.cols);
+      for (var c = this.cols - 1; c >= 0; --c) {
+        vectors[c] = this.col(c);
+      }
+    } else {
+      vectors = new Array(this.rows);
+      for (var r = this.rows - 1; r >= 0; --r) {
+        vectors[r] = this.row(r);
+      }
+    }
+
+    return vectors;
+  },
+
+  /**
+   * Invokes the given function once for each element of this matrix object. 3 arguments are passed
+   * to the function `function map(value, row, col)`. `value` is the element value. `row` and `col`
+   * is the index of the row or the column in the current iteration.
+   *
+   * The function should return a value. The returned value is assgined to the current index element.
+   *
+   * `this` object in the function is matrix object. We are in the matrix object context in the
+   * function.
+   */
   map: function(f) {
-    for (var r = 0, rlen = this.rows; r < rlen; ++r) {
-      var row = this[r];
-      for (var c = 0, clen = this.cols; c < clen; ++c) {
-        row[c] = f(row[c]);
+    var row, c;
+    for (var r = this.rows - 1; r >= 0; --r) {
+      row = this[r];
+      for (c = this.cols - 1; c >= 0; --c) {
+        row[c] = f.call(this, row[c], r, c);
       }
     }
     return this;
@@ -226,26 +285,29 @@ Matrix.prototype = {
     this.rows = elements.length;
     this.cols = this.rows == 0 ? 0 : elements[0].length;
 
-    for (var r = 0, rlen = this.rows; r < rlen; ++r) {
-      var row = [];
-      for (var c = 0, clen = this.cols; c < clen; ++c) {
+    var row, c;
+    for (var r = this.rows - 1; r >= 0; --r) {
+      row = new Array(this.cols);
+      for (c = this.cols - 1; c >= 0; --c) {
         row[c] = elements[r][c];
       }
       this[r] = row;
     }
+
+    return this;
   },
 
   setCol: function(index, col) {
     if (typeof col == 'number') {
-      for (var r = 0, rlen = this.rows; r < rlen; ++r) {
+      for (var r = this.rows - 1; r >= 0; --r) {
         this[r][index] = col;
       }
     } else {
-      if (this.rows != col.rows || this.cols <= index) {
+      if (this.rows !== col.rows || this.cols <= index) {
         return undefined;
       }
 
-      for (var r = 0, rlen = this.rows; r < rlen; ++r) {
+      for (var r = this.rows - 1; r >= 0; --r) {
         this[r][index] = col[r];
       }
     }
@@ -254,7 +316,7 @@ Matrix.prototype = {
 
   setRow: function(index, row) {
     if (typeof row == 'number') {
-      for (var c = 0, clen = this.cols; c < clen; ++c) {
+      for (var c = this.cols - 1; c >= 0; --c) {
         this[index][c] = row;
       }
     } else {
@@ -262,7 +324,7 @@ Matrix.prototype = {
         return undefined;
       }
 
-      for (var c = 0, clen = this.cols; c < clen; ++c) {
+      for (var c = this.cols - 1; c >= 0; --c) {
         this[index][c] = row[c];
       }
     }
@@ -270,9 +332,10 @@ Matrix.prototype = {
   },
 
   insertRow: function(index, row) {
+    var i;
     if (typeof row == 'number') {
-      var tmp = [];
-      for (var i = 0, len = this.cols; i < len; ++i) {
+      var tmp = new Array(this.cols);
+      for (i = this.cols - 1; i >= 0; --i) {
         tmp[i] = row;
       }
       row = tmp;
@@ -280,31 +343,31 @@ Matrix.prototype = {
       row = row.toArray();
     }
 
-    for (var r = this.rows++; r > index; --r) {
-      this[r] = this[r - 1];
+    for (i = this.rows++; i > index; --i) {
+      this[i] = this[i - 1];
     }
     this[index] = row;
     return this;
   },
 
   insertCol: function(index, col) {
+    var c, r;
     if (typeof col == 'number') {
-      var tmp = [];
-      for (var i = 0, len = this.rows; i < len; ++i) {
-        tmp[i] = col;
+      var tmp = new Array(this.rows);
+      for (r = this.rows - 1; r >= 0; --r) {
+        tmp[r] = col;
       }
       col = tmp;
     } else if (col.dim) {
       col = col.toArray();
     }
 
-    var c = this.cols++;
-    for (var r = 0, rlen = this.rows; r < rlen; ++r) {
-      for (; c > index; --c) {
+    for (r = 0, rlen = this.rows; r < rlen; ++r) {
+      for (c = this.cols; c > index; --c) {
         this[r][c] = this[r][c - 1];
       }
     }
-    for (var r = 0, rlen = this.rows; r < rlen; ++r) {
+    for (r = 0, rlen = this.rows; r < rlen; ++r) {
       this[r][index] = col[c];
     }
 
@@ -313,10 +376,9 @@ Matrix.prototype = {
 
   removeCol: function(col) {
     if (this.cols >= col) {
-      for (var r = 0, rlen = this.rows; r < rlen; ++r) {
+      for (var r = this.rows - 1; r >= 0; --r) {
         this[r].splice(col, 1);
       }
-
       this.cols--;
     }
 
@@ -328,7 +390,6 @@ Matrix.prototype = {
       for (var r = row, len = this.rows - 1; r < len; ++r) {
         this[r] = this[r + 1];
       }
-
       delete this[--this.rows];
     }
 
@@ -348,15 +409,15 @@ Matrix.prototype = {
   },
 
   col: function(col) {
-    var elements = [];
-    for (var r = 0, len = this.rows; r < len; ++r) {
+    var elements = new Array(this.rows);
+    for (var r = this.rows - 1; r >= 0; --r) {
       elements[r] = this[r][col];
     }
     return Vector.create(elements, Vector.COL);
   },
 
   flat: function() {
-    var elements = [], index = 0;
+    var elements = new Array(this.rows * this.cols), index = 0;
     for (var r = 0, rlen = this.rows; r < rlen; ++r) {
       for (var c = 0, clen = this.cols; c < clen; ++c) {
         elements[index++] = this[r][c];
@@ -366,29 +427,28 @@ Matrix.prototype = {
   },
 
   t: function() {
-    var elements = [];
-    for (var c = 0, clen = this.cols; c < clen; ++c) {
-      var row = [];
-      for (var r = 0, rlen = this.rows; r < rlen; ++r) {
+    var elements = new Array(this.cols);
+    for (var c = this.cols - 1; c >= 0; --c) {
+      var row = new Array(this.rows);
+      for (var r = this.rows - 1; r >= 0; --r) {
         row[r] = this[r][c];
       }
       elements[c] = row;
     }
 
-    this.set(elements);
-    return this;
+    return this.set(elements);
   },
 
   add: function(v) {
     if (typeof v == 'number') {
-      for (var r = 0, rlen = this.rows; r < rlen; ++r) {
-        for (var c = 0, clen = this.cols; c < clen; ++c) {
+      for (var r = this.rows - 1; r >= 0; --r) {
+        for (var c = this.cols - 1; c >= 0; --c) {
           this[r][c] += v;
         }
       }
     } else {
-      for (var r = 0, rlen = this.rows; r < rlen; ++r) {
-        for (var c = 0, clen = this.cols; c < clen; ++c) {
+      for (var r = this.rows - 1; r >= 0; --r) {
+        for (var c = this.cols - 1; c >= 0; --c) {
           this[r][c] += v[r][c];
         }
       }
@@ -398,14 +458,14 @@ Matrix.prototype = {
 
   mul: function(v) {
     if (typeof v == 'number') {
-      for (var r = 0, rlen = this.rows; r < rlen; ++r) {
-        for (var c = 0, clen = this.cols; c < clen; ++c) {
+      for (var r = this.rows - 1; r >= 0; --r) {
+        for (var c = this.cols - 1; c >= 0; --c) {
           this[r][c] *= v;
         }
       }
     } else {
-      for (var r = 0, rlen = this.rows; r < rlen; ++r) {
-        for (var c = 0, clen = this.cols; c < clen; ++c) {
+      for (var r = this.rows - 1; r >= 0; --r) {
+        for (var c = this.cols - 1; c >= 0; --c) {
           this[r][c] *= v[r][c];
         }
       }
@@ -414,9 +474,9 @@ Matrix.prototype = {
   },
 
   mmul: function(v) {
-    var elements = [];
+    var elements = new Array(this.rows);
     for (var r = 0, rlen = this.rows; r < rlen; ++r) {
-        var row = [];
+        var row = new Array(v.cols);
         for (var c = 0, clen = v.cols; c < clen; ++c) {
             var sum = 0;
             for (var i = 0, len = this.cols; i < len; ++i) {
