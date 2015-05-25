@@ -34,8 +34,7 @@
           case 5:
             return m1.add(m2);
           case -1:
-            // ToDo: sub
-            return m1;
+            return m1.sub(m2);
           case 6:
             return m1.mul(m2);
           case 1:

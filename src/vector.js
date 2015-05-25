@@ -111,6 +111,19 @@ Vector.prototype = {
     return this;
   },
 
+  sub: function(v) {
+    if (typeof v == 'number') {
+      for (var i = 0, dim = this.dim; i < dim; ++i) {
+        this[i] -= v;
+      }
+    } else {
+      for (var i = 0, dim = this.dim; i < dim; ++i) {
+        this[i] -= v[i];
+      }
+    }
+    return this;
+  },
+
   mul: function(v) {
     if (typeof v == 'number') {
       for (var i = 0, dim = this.dim; i < dim; ++i) {

@@ -55,24 +55,9 @@ Mx.Utils = {
     return sequence;
   },
 
-  randn: function (rows, cols) {
-    if (!rows) {
-      var x1 = Math.random();
-      var x2 = Math.random();
-      return Math.sqrt(-2 * Math.log(x1)) * Math.cos(2 * Math.PI * x2);
-    }
-
-    cols = cols || 1;
-
-    var rands = [];
-    for (var r = 0; r < rows; ++r) {
-      var row = [];
-      for (var c = 0; c < cols; c += 2) {
-        row[c] = Mx.Utils.randn();
-      }
-      rands[r] = row;
-    }
-
-    return Matrix.create(rands);
+  randn: function () {
+    var x1 = Math.random();
+    var x2 = Math.random();
+    return Math.sqrt(-2 * Math.log(x1)) * Math.cos(2 * Math.PI * x2);
   }
 };

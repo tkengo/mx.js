@@ -44,9 +44,10 @@ Matrix.create = function(rows, cols, initVal) {
     if (rows > 0 && cols > 0) {
       initVal = initVal || 0;
       elements = new Array(rows);
+      var row, c;
       for (var r = rows - 1; r >= 0; --r) {
-        var row = new Array(cols);
-        for (var c = cols - 1; c >= 0; --c) {
+        row = new Array(cols);
+        for (c = cols - 1; c >= 0; --c) {
           row[c] = initVal;
         }
         elements[r] = row;
@@ -170,6 +171,28 @@ Matrix.diag = function(value, size) {
 };
 
 /**
+ * This method generates the matrix that has random value in the all elements.
+ */
+Matrix.rand = function(rows, cols, f) {
+  cols = cols || rows;
+  var rand = f || Math.random;
+  var elements = new Array(rows);
+  var row, c;
+  for (var r = rows - 1; r >= 0; --r) {
+    row = new Array(cols);
+    for (c = cols - 1; c >= 0; --c) {
+      row[c] = rand();
+    }
+    elements[r] = row;
+  }
+  return Matrix.create(elements);
+};
+
+Matrix.randn = function(rows, cols) {
+  return Matrix.rand(rows, cols, Mx.Utils.randn);
+};
+
+/**
  * Define the prototype of the matrix object.
  *
  * Basically, operation method for matrix object is destructive. For example, `add` method was
@@ -260,6 +283,10 @@ Matrix.prototype = {
     return vectors;
   },
 
+  isSquare: function() {
+    return this.rows === this.cols;
+  },
+
   /**
    * Invokes the given function once for each element of this matrix object. 3 arguments are passed
    * to the function `function map(value, row, col)`. `value` is the element value. `row` and `col`
@@ -279,6 +306,18 @@ Matrix.prototype = {
       }
     }
     return this;
+  },
+
+  mapCols: function(c, f) {
+    for (var c = this.cols - 1; c >= 0; --c) {
+      this.setCol(c, f.call(this, this.col(c), c));
+    }
+  },
+
+  mapRows: function(r, f) {
+    for (var r = this.rows - 1; r >= 0; --r) {
+      this.setRow(r, f.call(this, this.row(r), r));
+    }
   },
 
   set: function(elements) {
@@ -417,9 +456,10 @@ Matrix.prototype = {
   },
 
   flat: function() {
-    var elements = new Array(this.rows * this.cols), index = 0;
+    var elements = new Array(this.rows * this.cols);
+    var index = 0, c;
     for (var r = 0, rlen = this.rows; r < rlen; ++r) {
-      for (var c = 0, clen = this.cols; c < clen; ++c) {
+      for (c = 0, clen = this.cols; c < clen; ++c) {
         elements[index++] = this[r][c];
       }
     }
@@ -428,9 +468,10 @@ Matrix.prototype = {
 
   t: function() {
     var elements = new Array(this.cols);
+    var row, r;
     for (var c = this.cols - 1; c >= 0; --c) {
-      var row = new Array(this.rows);
-      for (var r = this.rows - 1; r >= 0; --r) {
+      row = new Array(this.rows);
+      for (r = this.rows - 1; r >= 0; --r) {
         row[r] = this[r][c];
       }
       elements[c] = row;
@@ -439,16 +480,23 @@ Matrix.prototype = {
     return this.set(elements);
   },
 
+  det: function() {
+    if (!this.isSquare()) {
+      return undefined;
+    }
+  },
+
   add: function(v) {
+    var c;
     if (typeof v == 'number') {
       for (var r = this.rows - 1; r >= 0; --r) {
-        for (var c = this.cols - 1; c >= 0; --c) {
+        for (c = this.cols - 1; c >= 0; --c) {
           this[r][c] += v;
         }
       }
     } else {
-      for (var r = this.rows - 1; r >= 0; --r) {
-        for (var c = this.cols - 1; c >= 0; --c) {
+      for (var r = Math.min(this.rows, v.rows) - 1; r >= 0; --r) {
+        for (c = Math.min(this.cols, v.cols) - 1; c >= 0; --c) {
           this[r][c] += v[r][c];
         }
       }
@@ -456,16 +504,35 @@ Matrix.prototype = {
     return this;
   },
 
-  mul: function(v) {
+  sub: function(v) {
+    var c;
     if (typeof v == 'number') {
       for (var r = this.rows - 1; r >= 0; --r) {
-        for (var c = this.cols - 1; c >= 0; --c) {
+        for (c = this.cols - 1; c >= 0; --c) {
+          this[r][c] -= v;
+        }
+      }
+    } else {
+      for (var r = Math.min(this.rows, v.rows) - 1; r >= 0; --r) {
+        for (c = Math.min(this.cols, v.cols) - 1; c >= 0; --c) {
+          this[r][c] -= v[r][c];
+        }
+      }
+    }
+    return this;
+  },
+
+  mul: function(v) {
+    var c;
+    if (typeof v == 'number') {
+      for (var r = this.rows - 1; r >= 0; --r) {
+        for (c = this.cols - 1; c >= 0; --c) {
           this[r][c] *= v;
         }
       }
     } else {
-      for (var r = this.rows - 1; r >= 0; --r) {
-        for (var c = this.cols - 1; c >= 0; --c) {
+      for (var r = Math.min(this.rows, v.rows) - 1; r >= 0; --r) {
+        for (c = Math.min(this.cols, v.cols) - 1; c >= 0; --c) {
           this[r][c] *= v[r][c];
         }
       }
@@ -475,12 +542,24 @@ Matrix.prototype = {
 
   mmul: function(v) {
     var elements = new Array(this.rows);
-    for (var r = 0, rlen = this.rows; r < rlen; ++r) {
-        var row = new Array(v.cols);
-        for (var c = 0, clen = v.cols; c < clen; ++c) {
-            var sum = 0;
-            for (var i = 0, len = this.cols; i < len; ++i) {
-                sum += this[r][i] * v[i][c];
+    var row, c, sum, i, i1, i2;
+    for (var r = this.rows - 1; r >= 0; --r) {
+        row = new Array(v.cols);
+        for (c = v.cols - 1; c >= 0; --c) {
+            sum = 0;
+            for (i = this.cols - 1; i >= 2; i -= 3) {
+              i1 = i - 1;
+              i2 = i - 2;
+              sum += (this[r][i]  * v[i][c])  +
+                     (this[r][i1] * v[i1][c]) +
+                     (this[r][i2] * v[i2][c]);
+            }
+            if (i === 1) {
+              sum += (this[r][i    ] * v[i    ][c])  +
+                     (this[r][i - 1] * v[i - 1][c]);
+            }
+            if (i === 0) {
+              sum += this[r][i] * v[i][c];
             }
             row[c] = sum;
         }
@@ -490,9 +569,18 @@ Matrix.prototype = {
   },
 
   div: function(v) {
-    for (var r = 0, rlen = this.rows; r < rlen; ++r) {
-      for (var c = 0, clen = this.cols; c < clen; ++c) {
-        this[r][c] /= v;
+    var c;
+    if (typeof v == 'number') {
+      for (var r = this.rows - 1; r >= 0; --r) {
+        for (c = this.cols - 1; c >= 0; --c) {
+          this[r][c] /= v;
+        }
+      }
+    } else {
+      for (var r = Math.min(this.rows, v.rows) - 1; r >= 0; --r) {
+        for (c = Math.min(this.cols, v.cols) - 1; c >= 0; --c) {
+          this[r][c] /= v[r][c];
+        }
       }
     }
     return this;
@@ -503,14 +591,18 @@ Matrix.prototype = {
       return this;
     }
 
-    var _pow = Mx.Utils.getPow(p);
-    for (var r = 0, rlen = this.rows; r < rlen; ++r) {
-      for (var c = 0, clen = this.cols; c < clen; ++c) {
-        this[r][c] = _pow(this[r][c]);
+    var f = Mx.Utils.getPow(p), c;
+    for (var r = this.rows - 1; r >= 0; --r) {
+      for (c = this.cols - 1; c >= 0; --c) {
+        this[r][c] = f(this[r][c]);
       }
     }
 
     return this;
+  },
+
+  min: function() {
+    return Math.min.apply(null, this.flat());
   },
 
   minWithIndex: function() {
@@ -520,18 +612,131 @@ Matrix.prototype = {
     return [ min, index ];
   },
 
+  minRows: function() {
+    var mins = new Array(this.rows);
+    for (var r = this.rows - 1; r >= 0; --r) {
+      mins[r] = Math.min.apply(null, this[r]);
+    }
+    return Vector.create(mins, Vector.COL);
+  },
+
+  minRowsWithIndex: function() {
+    var mins = new Array(this.rows);
+    var indices = new Array(this.rows);
+    var min;
+    for (var r = this.rows - 1; r >= 0; --r) {
+      min = Math.min.apply(null, this[r]);
+      mins[r] = min;
+      indices[r] = this[r].indexOf(min);
+    }
+    return [
+      Vector.create(mins, Vector.COL),
+      Vector.create(indices, Vector.COL)
+    ]
+  },
+
+  minCols: function() {
+    var mins = new Array(this.cols);
+    var elements, r;
+    for (var c = this.cols - 1; c >= 0; --c) {
+      elements = new Array(this.rows);
+      for (r = this.rows - 1; r >= 0; --r) {
+        elements[r] = this[r][c];
+      }
+      mins[c] = Math.min.apply(null, elements);
+    }
+    return Vector.create(mins, Vector.ROW);
+  },
+
+  minColsWithIndex: function() {
+    var mins = new Array(this.cols);
+    var indices = new Array(this.cols);
+    var elements, r, min;
+    for (var c = this.cols - 1; c >= 0; --c) {
+      elements = new Array(this.rows);
+      for (r = this.rows - 1; r >= 0; --r) {
+        elements[r] = this[r][c];
+      }
+      min = Math.min.apply(null, elements);
+      mins[c] = min;
+      indices[c] = elements.indexOf(min);
+    }
+    return [
+      Vector.create(mins, Vector.ROW),
+      Vector.create(indices, Vector.ROW)
+    ]
+  },
+
+  max: function() {
+    return Math.max.apply(null, this.flat());
+  },
+
+  maxWithIndex: function() {
+    var elements = this.flat();
+    var max = Math.max.apply(null, elements);
+    var index = elements.indexOf(max);
+    return [ max, index ];
+  },
+
   maxRows: function() {
-    var maxes = [];
-    for (var r = 0, len = this.rows; r < len; ++r) {
+    var maxes = new Array(this.rows);
+    for (var r = this.rows - 1; r >= 0; --r) {
       maxes[r] = Math.max.apply(null, this[r]);
     }
     return Vector.create(maxes, Vector.COL);
   },
 
+  maxRowsWithIndex: function() {
+    var maxes = new Array(this.rows);
+    var indices = new Array(this.rows);
+    var max;
+    for (var r = this.rows - 1; r >= 0; --r) {
+      max = Math.max.apply(null, this[r]);
+      maxes[r] = max;
+      indices[r] = this[r].indexOf(max);
+    }
+    return [
+      Vector.create(maxes, Vector.COL),
+      Vector.create(indices, Vector.COL)
+    ]
+  },
+
+  maxCols: function() {
+    var maxes = new Array(this.cols);
+    var elements, r;
+    for (var c = this.cols - 1; c >= 0; --c) {
+      elements = new Array(this.rows);
+      for (r = this.rows - 1; r >= 0; --r) {
+        elements[r] = this[r][c];
+      }
+      maxes[c] = Math.max.apply(null, elements);
+    }
+    return Vector.create(maxes, Vector.ROW);
+  },
+
+  maxColsWithIndex: function() {
+    var maxes = new Array(this.cols);
+    var indices = new Array(this.cols);
+    var elements, r, max;
+    for (var c = this.cols - 1; c >= 0; --c) {
+      elements = new Array(this.rows);
+      for (r = this.rows - 1; r >= 0; --r) {
+        elements[r] = this[r][c];
+      }
+      max = Math.max.apply(null, elements);
+      maxes[c] = max;
+      indices[c] = elements.indexOf(max);
+    }
+    return [
+      Vector.create(maxes, Vector.ROW),
+      Vector.create(indices, Vector.ROW)
+    ]
+  },
+
   sum: function() {
-    var sum = 0;
-    for (var r = 0, rlen = this.rows; r < rlen; ++r) {
-      for (var c = 0, clen = this.cols; c < clen; ++c) {
+    var sum = 0, c;
+    for (var r = this.rows - 1; r >= 0; --r) {
+      for (c = this.cols - 1; c >= 0; --c) {
         sum += this[r][c];
       }
     }
@@ -539,29 +744,151 @@ Matrix.prototype = {
   },
 
   sumCols: function() {
-    var sum = [];
-
-    for (var c = 0, clen = this.cols; c < clen; ++c) {
+    var sum = new Array(this.cols), r;
+    for (var c = this.cols - 1; c >= 0; --c) {
       sum[c] = 0;
-      for (var r = 0, rlen = this.rows; r < rlen; ++r) {
+      for (r = this.rows - 1; r >= 0; --r) {
         sum[c] += this[r][c];
       }
     }
-
     return Vector.create(sum, Vector.ROW);
   },
 
   sumRows: function() {
-    var sum = [];
-
-    for (var r = 0, rlen = this.rows; r < rlen; ++r) {
+    var sum = new Array(this.rows), c;
+    for (var r = this.rows - 1; r >= 0; --r) {
       sum[r] = 0;
-      for (var c = 0, clen = this.cols; c < clen; ++c) {
+      for (c = this.cols - 1; c >= 0; --c) {
         sum[r] += this[r][c];
       }
     }
-
     return Vector.create(sum, Vector.COL);
+  },
+
+  flipRows: function() {
+    if (this.cols === 1) {
+      return this;
+    }
+
+    for (var r = this.rows - 1; r >= 0; --r) {
+      this[r].reverse();
+    }
+    return this;
+  },
+
+  flipCols: function() {
+    if (this.rows === 1) {
+      return this;
+    }
+
+    var cols = new Array(this.cols);
+    var rows = this.rows;
+    var rowm = rows - 1;
+    var r, tmp
+    for (var c = this.cols - 1; c >= 0; --c) {
+      for (r = rowm, len = Math.floor(rows / 2); r >= len; --r) {
+        tmp = this[r][c];
+        this[r][c] = this[rowm - r][c];
+        this[rowm - r][c] = tmp;
+      }
+    }
+    return this;
+  },
+
+  meanCols: function() {
+    var mean = new Array(this.cols), r;
+    for (var c = this.cols - 1; c >= 0; --c) {
+      mean[c] = 0;
+      for (r = this.rows - 1; r >= 0; --r) {
+        mean[c] += this[r][c];
+      }
+      mean[c] /= this.rows;
+    }
+    return Vector.create(mean, Vector.ROW);
+  },
+
+  meanRows: function() {
+    var mean = new Array(this.rows), c;
+    for (var r = this.rows - 1; r >= 0; --r) {
+      mean[r] = 0;
+      for (c = this.cols - 1; c >= 0; --c) {
+        mean[r] += this[r][c];
+      }
+      mean[r] /= this.cols;
+    }
+    return Vector.create(mean, Vector.COL);
+  },
+
+  stdCols: function() {
+    var mean = this.meanCols();
+    var std = new Array(this.cols), r, tmp;
+    for (var c = this.cols - 1; c >= 0; --c) {
+      std[c] = 0;
+      for (r = this.rows - 1; r >= 0; --r) {
+        tmp = mean[c] - this[r][c];
+        std[c] += tmp * tmp;
+      }
+      std[c] /= this.cols;
+    }
+    return Vector.create(std, Vector.ROW);
+  },
+
+  stdRows: function() {
+    var mean = this.meanRows();
+    var std = new Array(this.rows), c, tmp;
+    for (var r = this.rows - 1; r >= 0; --r) {
+      std[r] = 0;
+      for (c = this.cols - 1; c >= 0; --c) {
+        tmp = mean[c] - this[r][c];
+        std[r] += tmp * tmp;
+      }
+      std[r] /= this.cols;
+    }
+    return Vector.create(std, Vector.COL);
+  },
+
+  lu: function() {
+    if (!this.isSquare()) {
+      return undefined;
+    }
+
+    var m = this.clone();
+    var l = Matrix.eye(this.rows);
+    var u = Matrix.zeros(this.rows);
+    var sum, i, j, k, rlen, clen;
+    for (i = 0, clen = this.cols; i < clen; ++i) {
+      for (j = i + 1, rlen = this.rows; j < rlen; ++j) {
+        m[j][i] /= m[i][i];
+        for (k = i + 1; k < rlen; ++k) {
+          m[j][k] -= m[j][i] * m[i][k];
+        }
+      }
+      // for (i = 0; i <= j; ++i) {
+      //   for (k = 0, sum = 0; k <= i - 1; ++k) {
+      //     sum += l[i][k] * u[k][j];
+      //   }
+      //   u[i][j] = this[i][j] - sum;
+      // }
+      //
+      // for (i = j + 1; i < this.rows; ++i) {
+      //   for (k = 0, sum = 0; k <= j - 1; ++k) {
+      //     sum += l[i][k] * u[k][j];
+      //   }
+      //   l[i][j] = (this[i][j] - sum) / u[j][j];
+      // }
+    }
+
+    for (i = 0, clen = this.rows; i < clen; ++i) {
+      for (j = 0, rlen = this.cols; j < clen; ++j) {
+        if (i > j) {
+          l[i][j] = m[i][j];
+        } else {
+          u[i][j] = m[i][j];
+        }
+      }
+    }
+
+    return [ l, u ];
   }
 };
 
