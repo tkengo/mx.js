@@ -199,6 +199,10 @@ Matrix.rand = function(rows, cols, f) {
   return Matrix.create(elements);
 };
 
+/**
+ * This method generates the matrix that has random value in the all elements. Random value follows
+ * the gaussian distribution.
+ */
 Matrix.randn = function(rows, cols) {
   return Matrix.rand(rows, cols, Mx.Utils.randn);
 };
@@ -259,13 +263,14 @@ Matrix.prototype = {
    * | 1 5 1 |
    * | 4 0 3 |
    *  -------
-   * returns the follow array from the matrix by calling `toArray` method:
+   * returns the follow array by calling `toArray` method:
    * [ [ 2, 1, 2 ],
    *   [ 1, 5, 1 ],
    *   [ 4, 0, 3 ] ]
    *
-   * The matrix is not changed even if a value in the array is changed because the array is copied
-   * from the source matrix.
+   * The matrix is not changed even if a value in the returned array is changed because the array is
+   * copied from the source matrix.
+   * You can use `flat` method instead if you want the flatten array.
    */
   toArray: function() {
     var elements = new Array(this.rows);
@@ -275,6 +280,11 @@ Matrix.prototype = {
     return elements;
   },
 
+  /**
+   * Translate this matrix object to vectors. The matrix returns the row or col vectors by calling
+   * `toVector` method. `type` argument can receive Vector.ROW or Vector.COL. Default value is
+   * Vector.COL.
+   */
   toVector: function(type) {
     type = type || Vector.COL;
 
@@ -294,6 +304,9 @@ Matrix.prototype = {
     return vectors;
   },
 
+  /**
+   * Check whether if this matrix is square.
+   */
   isSquare: function() {
     return this.rows === this.cols;
   },
