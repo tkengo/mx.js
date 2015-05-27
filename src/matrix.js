@@ -41,8 +41,16 @@ Matrix.create = function(rows, cols, initVal) {
   var elements;
 
   if (typeof rows == 'number') {
+    if (initVal === void 0) {
+      if (cols === void 0) {
+        cols = rows;
+        initVal = 0;
+      } else {
+        initVal = cols;
+      }
+    }
+
     if (rows > 0 && cols > 0) {
-      initVal = initVal || 0;
       elements = new Array(rows);
       var row, c;
       for (var r = rows - 1; r >= 0; --r) {
@@ -52,6 +60,8 @@ Matrix.create = function(rows, cols, initVal) {
         }
         elements[r] = row;
       }
+    } else {
+      throw new Error('Matrix size is illegal: rows = ' + rows + ', cols = ' + cols);
     }
   } else {
     rows = rows || [];
@@ -174,6 +184,7 @@ Matrix.diag = function(value, size) {
  * This method generates the matrix that has random value in the all elements.
  */
 Matrix.rand = function(rows, cols, f) {
+  rows = rows || 0;
   cols = cols || rows;
   var rand = f || Math.random;
   var elements = new Array(rows);

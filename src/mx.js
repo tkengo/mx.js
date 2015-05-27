@@ -2,20 +2,20 @@ var Mx = {};
 Mx.Math  = {};
 
 var asMath = (function() {
-  function abs()   { return this.map(function(v) { return Math.abs(v);   }); };
-  function acos()  { return this.map(function(v) { return Math.acos(v);  }); };
-  function asin()  { return this.map(function(v) { return Math.asin(v);  }); };
-  function atan()  { return this.map(function(v) { return Math.atan(v);  }); };
-  function atan2() { return this.map(function(v) { return Math.atan2(v); }); };
-  function ceil()  { return this.map(function(v) { return Math.ceil(v);  }); };
-  function cos()   { return this.map(function(v) { return Math.cos(v);   }); };
-  function exp()   { return this.map(function(v) { return Math.exp(v);   }); };
-  function floor() { return this.map(function(v) { return Math.floor(v); }); };
-  function log()   { return this.map(function(v) { return Math.log(v);   }); };
-  function round() { return this.map(function(v) { return Math.round(v); }); };
-  function sin()   { return this.map(function(v) { return Math.sin(v);   }); };
-  function sqrt()  { return this.map(function(v) { return Math.sqrt(v);  }); };
-  function tan()   { return this.map(function(v) { return Math.tan(v);   }); };
+  function abs(m)   { return (m || this).map(function(v) { return Math.abs(v);   }); };
+  function acos(m)  { return (m || this).map(function(v) { return Math.acos(v);  }); };
+  function asin(m)  { return (m || this).map(function(v) { return Math.asin(v);  }); };
+  function atan(m)  { return (m || this).map(function(v) { return Math.atan(v);  }); };
+  function atan2(m) { return (m || this).map(function(v) { return Math.atan2(v); }); };
+  function ceil(m)  { return (m || this).map(function(v) { return Math.ceil(v);  }); };
+  function cos(m)   { return (m || this).map(function(v) { return Math.cos(v);   }); };
+  function exp(m)   { return (m || this).map(function(v) { return Math.exp(v);   }); };
+  function floor(m) { return (m || this).map(function(v) { return Math.floor(v); }); };
+  function log(m)   { return (m || this).map(function(v) { return Math.log(v);   }); };
+  function round(m) { return (m || this).map(function(v) { return Math.round(v); }); };
+  function sin(m)   { return (m || this).map(function(v) { return Math.sin(v);   }); };
+  function sqrt(m)  { return (m || this).map(function(v) { return Math.sqrt(v);  }); };
+  function tan(m)   { return (m || this).map(function(v) { return Math.tan(v);   }); };
 
   return function() {
     this.abs   = abs;
@@ -34,6 +34,7 @@ var asMath = (function() {
     this.tan   = tan;
   };
 })();
+asMath.call(Mx);
 
 Mx.Utils = {
   getPow: function(p) {

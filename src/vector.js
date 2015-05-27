@@ -24,6 +24,29 @@ Vector.ROW = 1;
 Vector.COL = 2;
 
 Vector.prototype = {
+  /**
+   * Build a string from the matrix for a human.
+   */
+  toString: function() {
+    var s = '';
+    for (var i = this.dim - 1; i >= 0; --i) {
+      s += this[i];
+      if (this.type === Vector.COL) {
+        s += "\n";
+      } else {
+        s += ' ';
+      }
+    }
+    return s;
+  },
+
+  /**
+   * Output this matrix to the console log.
+   */
+  disp: function() {
+    console.log(this.toString());
+  },
+
   clone: function() {
     return new Vector(this.flat(), this.type);
   },
