@@ -60,8 +60,6 @@ Matrix.create = function(rows, cols, initVal) {
         }
         elements[r] = row;
       }
-    } else {
-      throw new Error('Matrix size is illegal: rows = ' + rows + ', cols = ' + cols);
     }
   } else {
     rows = rows || [];
