@@ -1,5 +1,5 @@
 (function() {
-  function __$_(l, o, r) {
+  function __$__(l, o, r) {
     if (typeof l === 'number' && typeof r === 'number') {
       switch (o) {
         case '+': return l + r;
@@ -46,48 +46,49 @@
   }
 
   function walk(node) {
-    if (node.type === 'BinaryExpression') {
-      var left  = walk(node.left);
-      var right = walk(node.right);
-      return '__$_(' + left + ',' + '"' + node.operator + '",' + right + ')';
-    } else if (node.type === 'Identifier') {
-      return node.name;
-    } else if (node.type === 'Literal') {
-      return node.raw;
-    } else if (node.type === 'UnaryExpression') {
-      if (operator === '-') {
-        return '__$_(void 0,' + '"' + node.operator + '",' + walk(node.argument) + ')';
-      } else if (operator === '+') {
-        walk(node.argument);
-      }
-    } else if (node.type === 'CallExpression') {
-      if (node.callee.object !== void 0) {
-        var obj = walk(node.callee.object);
+    switch (node.type) {
+      case 'BinaryExpression':
+        var left  = walk(node.left);
+        var right = walk(node.right);
+        return '__$__(' + left + ',' + '"' + node.operator + '",' + right + ')';
+      case 'Identifier':
+        return node.name;
+      case 'Literal':
+        return node.raw;
+      case 'UnaryExpression':
+        if (operator === '-') {
+          return '__$__(void 0,' + '"' + node.operator + '",' + walk(node.argument) + ')';
+        } else if (operator === '+') {
+          walk(node.argument);
+          break;
+        }
+      case 'CallExpression':
+        var arguments = node.arguments;
+        if (node.callee.object !== void 0) {
+          var obj = walk(node.callee.object);
 
-        var arguments = node.arguments;
-        if (arguments.length === 0) {
-          return obj + '.' + fs.substring(node.callee.property.start, node.end);
-        } else {
-          var len = arguments.length;
-          var str = new Array(len);
-          for (var i = 0; i < len; ++i) {
-            str[i] = walk(arguments[i]);
+          if (arguments.length === 0) {
+            return obj + '.' + fs.substring(node.callee.property.start, node.end);
+          } else {
+            var len = arguments.length;
+            var str = new Array(len);
+            for (var i = 0; i < len; ++i) {
+              str[i] = walk(arguments[i]);
+            }
+            return obj + '.' + fs.substring(node.callee.property.start, node.callee.property.end) + '(' + str.join() + ')';
           }
-          return obj + '.' + fs.substring(node.callee.property.start, node.callee.property.end) + '(' + str.join() + ')';
-        }
-      } else {
-        var arguments = node.arguments;
-        if (arguments.length === 0) {
-          return fs.substring(node.start, node.end);
         } else {
-          var len = arguments.length;
-          var str = new Array(len);
-          for (var i = 0; i < len; ++i) {
-            str[i] = walk(arguments[i]);
+          if (arguments.length === 0) {
+            return fs.substring(node.start, node.end);
+          } else {
+            var len = arguments.length;
+            var str = new Array(len);
+            for (var i = 0; i < len; ++i) {
+              str[i] = walk(arguments[i]);
+            }
+            return fs.substring(node.callee.start, node.callee.end) + '(' + str.join() + ')';
           }
-          return fs.substring(node.callee.start, node.callee.end) + '(' + str.join() + ')';
         }
-      }
     }
   }
 
