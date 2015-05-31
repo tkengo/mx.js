@@ -5,7 +5,6 @@
         case '+': return l + r;
         case '-': return l - r;
         case '*': return l * r;
-        case '^': return Mx.Utils.getPow(r)(l);
         case '/': return l / r;
       }
     } else {
@@ -26,23 +25,45 @@
         case '+': return l.add(r);
         case '-': return l.sub(r);
         case '*': return l.mul(r);
-        case '^': return l.pow(r);
         case '/': return l.div(r);
+        case '^': return l.mmul(r);
       }
     }
   }
 
+  var ms = [];
+  Matrix.prototype.valueOf = function() {
+    ms.push(this);
+    return ms.length + 1;
+  };
+  Vector.prototype.valueOf = function() {
+    ms.push(this);
+    return ms.length + 1;
+  };
+
   var fs;
   function M(f) {
-    fs = f.toString();
-    fs = fs.replace(/[\r\n]/g, '').replace(/function *\(.*\) *{ *(.*) *;* *}/gm, '$1');
-    fs = fs.replace(/(^\s+)|(\s+$)/g, '') + ';';
-    var ast = acorn.parse(fs);
-    var expressionRoot = ast.body[0].expression;
-    var expression = walk(expressionRoot);
-    // console.log(ast.body[0].expression);
-    // console.log(expression);
-    return eval(expression);
+    if (typeof f === 'function') {
+      fs = f.toString();
+      fs = fs.replace(/[\r\n]/g, '').replace(/function *\(.*\) *{ *(.*) *;* *}/gm, '$1');
+      fs = fs.replace(/(^\s+)|(\s+$)/g, '') + ';';
+      var ast = acorn.parse(fs);
+      var expressionRoot = ast.body[0].expression;
+      var expression = walk(expressionRoot);
+      console.log(ast.body[0].expression);
+      console.log(expression);
+      collectVariables();
+      return eval(expression);
+    } else if (typeof f === 'number') {
+      var left  = ms.shift();
+      var right = ms.shift();
+      switch (f) {
+        case  5: __$__(left, '+', right);
+        case -1: __$__(left, '-', right);
+        case  6: __$__(left, '*', right);
+        default: __$__(left, '/', right);
+      }
+    }
   }
 
   function walk(node) {
@@ -62,6 +83,8 @@
           walk(node.argument);
           break;
         }
+      case 'MemberExpression':
+        return fs.substring(node.start, node.end);
       case 'CallExpression':
         var arguments = node.arguments;
         if (node.callee.object !== void 0) {
@@ -92,11 +115,30 @@
     }
   }
 
+  function collectVariables(f) {
+    Object.defineProperty(Number.prototype, 'mat', {
+      get: function() {
+        ms.push(this);
+        return this;
+      }
+    });
+    f();
+  }
+
   var g = Function('return this')();
   Object.defineProperty(g, 'M', {
     enumerable: false,
     get: function() {
       return M;
+    }
+  });
+  Object.defineProperty(g, 'S', {
+    enumerable: false,
+    get: function() {
+      return function(scalar) {
+        ms.push(scalar);
+        return ms.length + 1;
+      };
     }
   });
 })();

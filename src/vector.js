@@ -20,6 +20,20 @@ Vector.zeros = function(dim, type) {
   return Vector.create(dim, 0, type);
 };
 
+Vector.rand = function(dim, type, f) {
+  dim = dim || 0;
+  var rand = f || Math.random;
+  var elements = new Array(dim);
+  for (var i = dim - 1; i >= 0; --i) {
+    elements[i] = rand();
+  }
+  return Vector.create(elements, type);
+};
+
+Vector.randn = function(dim, type) {
+  return Matrix.rand(dim, type, Mx.Utils.randn);
+};
+
 Vector.ROW = 1;
 Vector.COL = 2;
 
@@ -57,6 +71,18 @@ Vector.prototype = {
       elements[i] = this[i];
     }
     return elements;
+  },
+
+  toMat: function() {
+    if (this.type === Vector.ROW) {
+      return Matrix.create(this.toArray());
+    } else {
+      var elements = new Array(this.dim);
+      for (var i = this.dim - 1; i >= 0; --i) {
+        elements[i] = [ this[i] ];
+      }
+      return Matrix.create(elements);
+    }
   },
 
   map: function(f) {
@@ -158,6 +184,22 @@ Vector.prototype = {
       }
     }
     return this;
+  },
+
+  mmul: function(v) {
+    if (v instanceof Vector) {
+      if (this.type === Vector.ROW && v.type === Vector.COL) {
+        var result = 0;
+        for (var i = this.dim - 1; i >= 0; --i) {
+          result += this[i] * v[i];
+        }
+        return result;
+      } else {
+        v = v.toMat();
+      }
+    }
+
+    return this.toMat().mmul(v);
   },
 
   div: function(v) {

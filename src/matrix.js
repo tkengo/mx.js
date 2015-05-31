@@ -280,10 +280,10 @@ Matrix.prototype = {
 
   /**
    * Translate this matrix object to vectors. The matrix returns the row or col vectors by calling
-   * `toVector` method. `type` argument can receive Vector.ROW or Vector.COL. Default value is
+   * `toVec` method. `type` argument can receive Vector.ROW or Vector.COL. Default value is
    * Vector.COL.
    */
-  toVector: function(type) {
+  toVec: function(type) {
     type = type || Vector.COL;
 
     var vectors, r, elements;
@@ -309,6 +309,10 @@ Matrix.prototype = {
     return this.rows === this.cols;
   },
 
+  isEmpty: function() {
+    return this.rows === 0;
+  },
+
   /**
    * Invokes the given function once for each element of this matrix object. 3 arguments are passed
    * to the function `function map(value, row, col)`. `value` is the element value. `row` and `col`
@@ -330,13 +334,13 @@ Matrix.prototype = {
     return this;
   },
 
-  mapCols: function(c, f) {
+  mapCols: function(f) {
     for (var c = this.cols - 1; c >= 0; --c) {
       this.setCol(c, f.call(this, this.col(c), c));
     }
   },
 
-  mapRows: function(r, f) {
+  mapRows: function(f) {
     for (var r = this.rows - 1; r >= 0; --r) {
       this.setRow(r, f.call(this, this.row(r), r));
     }
@@ -503,8 +507,28 @@ Matrix.prototype = {
   },
 
   det: function() {
-    if (!this.isSquare()) {
+    if (!this.isSquare() || this.isEmpty()) {
       return undefined;
+    }
+
+    if (this.rows === 1) {
+      return this[0][0];
+    } else if (this.rows === 2) {
+      return this[0][0] * this[1][1] - this[0][1] * this[1][0];
+    } else if (this.rows === 3) {
+      return this[0][0] * this[1][1] * this[2][2] +
+             this[1][0] * this[2][1] * this[0][2] +
+             this[2][0] * this[0][1] * this[1][2] -
+             this[0][0] * this[2][1] * this[1][2] -
+             this[2][0] * this[1][1] * this[0][2] -
+             this[1][0] * this[0][1] * this[2][2];
+    } else {
+      var u = this.lu()[1];
+      var det = 1;
+      for (var i = this.rows - 1; i >= 0; --i) {
+        det *= u[i][i];
+      }
+      return det;
     }
   },
 
@@ -563,25 +587,32 @@ Matrix.prototype = {
   },
 
   mmul: function(v) {
+    if (v instanceof Vector) {
+      v = v.toMat();
+    }
+    if (this.cols !== v.rows) {
+      return undefined;
+    }
+
     var elements = new Array(this.rows);
-    var row, c, sum, i, i1, i2;
+    var row, c, sum, i0, i1, i2;
     for (var r = this.rows - 1; r >= 0; --r) {
         row = new Array(v.cols);
         for (c = v.cols - 1; c >= 0; --c) {
             sum = 0;
-            for (i = this.cols - 1; i >= 2; i -= 3) {
-              i1 = i - 1;
-              i2 = i - 2;
-              sum += (this[r][i]  * v[i][c])  +
+            for (i0 = this.cols - 1; i0 >= 2; i0 -= 3) {
+              i1 = i0 - 1;
+              i2 = i0 - 2;
+              sum += (this[r][i0] * v[i0][c]) +
                      (this[r][i1] * v[i1][c]) +
                      (this[r][i2] * v[i2][c]);
             }
-            if (i === 1) {
-              sum += (this[r][i    ] * v[i    ][c])  +
-                     (this[r][i - 1] * v[i - 1][c]);
+            if (i0 === 1) {
+              sum += (this[r][1] * v[1][c])  +
+                     (this[r][0] * v[0][c]);
             }
-            if (i === 0) {
-              sum += this[r][i] * v[i][c];
+            if (i0 === 0) {
+              sum += this[r][0] * v[0][c];
             }
             row[c] = sum;
         }
