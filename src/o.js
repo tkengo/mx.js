@@ -44,16 +44,26 @@
   var fs;
   function M(f) {
     if (typeof f === 'function') {
+      var _valueOf = Number.prototype.valueOf;
+      Number.prototype.valueOf = function() {
+        var v = _valueOf.call(this);
+        ms.push(v);
+        return v;
+      };
+
+      ms = [];
+      deep = 0;
+      f();
+      Number.prototype.valueOf = _valueOf;
+
       fs = f.toString();
       fs = fs.replace(/[\r\n]/g, '').replace(/function *\(.*\) *{ *(.*) *;* *}/gm, '$1');
       fs = fs.replace(/(^\s+)|(\s+$)/g, '') + ';';
       var ast = acorn.parse(fs);
       var expressionRoot = ast.body[0].expression;
       var expression = walk(expressionRoot);
-      console.log(ast.body[0].expression);
-      console.log(expression);
-      collectVariables();
-      return eval(expression);
+      var result = eval(expression);
+      return result;
     } else if (typeof f === 'number') {
       var left  = ms.shift();
       var right = ms.shift();
@@ -66,6 +76,7 @@
     }
   }
 
+  var deep = 0;
   function walk(node) {
     switch (node.type) {
       case 'BinaryExpression':
@@ -73,7 +84,9 @@
         var right = walk(node.right);
         return '__$__(' + left + ',' + '"' + node.operator + '",' + right + ')';
       case 'Identifier':
-        return node.name;
+      case 'MemberExpression':
+      case 'CallExpression':
+        return 'ms[' + deep++ + ']';
       case 'Literal':
         return node.raw;
       case 'UnaryExpression':
@@ -83,46 +96,7 @@
           walk(node.argument);
           break;
         }
-      case 'MemberExpression':
-        return fs.substring(node.start, node.end);
-      case 'CallExpression':
-        var arguments = node.arguments;
-        if (node.callee.object !== void 0) {
-          var obj = walk(node.callee.object);
-
-          if (arguments.length === 0) {
-            return obj + '.' + fs.substring(node.callee.property.start, node.end);
-          } else {
-            var len = arguments.length;
-            var str = new Array(len);
-            for (var i = 0; i < len; ++i) {
-              str[i] = walk(arguments[i]);
-            }
-            return obj + '.' + fs.substring(node.callee.property.start, node.callee.property.end) + '(' + str.join() + ')';
-          }
-        } else {
-          if (arguments.length === 0) {
-            return fs.substring(node.start, node.end);
-          } else {
-            var len = arguments.length;
-            var str = new Array(len);
-            for (var i = 0; i < len; ++i) {
-              str[i] = walk(arguments[i]);
-            }
-            return fs.substring(node.callee.start, node.callee.end) + '(' + str.join() + ')';
-          }
-        }
     }
-  }
-
-  function collectVariables(f) {
-    Object.defineProperty(Number.prototype, 'mat', {
-      get: function() {
-        ms.push(this);
-        return this;
-      }
-    });
-    f();
   }
 
   var g = Function('return this')();
@@ -139,6 +113,16 @@
         ms.push(scalar);
         return ms.length + 1;
       };
+    }
+  });
+  Object.defineProperty(Number.prototype, 'mat', {
+    get: function() {
+      return this;
+    }
+  });
+  Object.defineProperty(Number.prototype, 'vec', {
+    get: function() {
+      return this;
     }
   });
 })();
