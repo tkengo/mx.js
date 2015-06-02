@@ -532,6 +532,35 @@ Matrix.prototype = {
     }
   },
 
+  inv: function() {
+    if (!this.isSquare() || this.isEmpty()) {
+      return undefined;
+    }
+
+    var n = this.rows;
+    var m = this.clone();
+    var inv = Matrix.eye(m.rows);
+    var j, x, k;
+
+    for (var i = 0; i < n; ++i) {
+      x = m[i][i];
+      for (j = i; j < n; ++j) {
+        m[i][j]   /= x;
+        inv[i][j] /= x;
+      }
+
+      for (j = i + 1; j < n; ++j) {
+        x = m[i][j];
+        for (k = i; k < n; ++k) {
+          m[j][k]   -= m[i][k] * x;
+          inv[j][k] -= m[i][k] * x;
+        }
+      }
+    }
+
+    return inv;
+  },
+
   add: function(v) {
     var c;
     if (typeof v == 'number') {
