@@ -63,15 +63,16 @@
       var expressionRoot = ast.body[0].expression;
       var expression = walk(expressionRoot);
       var result = eval(expression);
+      ms = [];
       return result;
     } else if (typeof f === 'number') {
       var left  = ms.shift();
       var right = ms.shift();
       switch (f) {
-        case  5: __$__(left, '+', right);
-        case -1: __$__(left, '-', right);
-        case  6: __$__(left, '*', right);
-        default: __$__(left, '/', right);
+        case  5: return __$__(left, '+', right);
+        case -1: return __$__(left, '-', right);
+        case  6: return __$__(left, '*', right);
+        default: return __$__(left, '/', right);
       }
     }
   }

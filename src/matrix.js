@@ -544,16 +544,18 @@ Matrix.prototype = {
 
     for (var i = 0; i < n; ++i) {
       x = m[i][i];
-      for (j = i; j < n; ++j) {
+      for (j = 0; j < n; ++j) {
         m[i][j]   /= x;
         inv[i][j] /= x;
       }
 
-      for (j = i + 1; j < n; ++j) {
-        x = m[i][j];
-        for (k = i; k < n; ++k) {
-          m[j][k]   -= m[i][k] * x;
-          inv[j][k] -= m[i][k] * x;
+      for (j = 0; j < n; ++j) {
+        if (i != j) {
+          x = m[j][i];
+          for (k = 0; k < n; ++k) {
+            m[j][k]   -= m[i][k] * x;
+            inv[j][k] -= inv[i][k] * x;
+          }
         }
       }
     }
