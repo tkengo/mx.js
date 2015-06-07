@@ -17,7 +17,9 @@
       }
 
       if (typeof l === 'number') {
-        throw new Error("The given expression can't calculate due to the left operand has a scalar value and the right operand has a Matrix or Vector object: " + fs);
+        var tmp = l;
+        l = r;
+        r = tmp;
       }
 
       l = l.clone();
@@ -42,19 +44,13 @@
   };
 
   var fs;
+  var _valueOf;
   function M(f) {
+    var result;
     if (typeof f === 'function') {
-      var _valueOf = Number.prototype.valueOf;
-      Number.prototype.valueOf = function() {
-        var v = _valueOf.call(this);
-        ms.push(v);
-        return v;
-      };
-
       ms = [];
       deep = 0;
       f();
-      Number.prototype.valueOf = _valueOf;
 
       fs = f.toString();
       fs = fs.replace(/[\r\n]/g, '').replace(/function *\(.*\) *{ *(.*) *;* *}/gm, '$1');
@@ -62,27 +58,39 @@
       var ast = acorn.parse(fs);
       var expressionRoot = ast.body[0].expression;
       var expression = walk(expressionRoot);
-      var result = eval(expression);
-      ms = [];
-      return result;
+      result = eval(expression);
     } else if (typeof f === 'number') {
       var left  = ms.shift();
       var right = ms.shift();
       switch (f) {
-        case  5: return __$__(left, '+', right);
-        case -1: return __$__(left, '-', right);
-        case  6: return __$__(left, '*', right);
-        default: return __$__(left, '/', right);
+        case  5: result = __$__(left, '+', right); break;
+        case -1: result = __$__(left, '-', right); break;
+        case  6: result = __$__(left, '*', right); break;
+        case  1: result = __$__(left, '^', right); break;
+        default: result = __$__(left, '/', right); break;
       }
     }
+
+    if (_valueOf !== void 0) {
+      Number.prototype.valueOf = _valueOf;
+      _valueOf = void 0;
+    }
+    ms = [];
+    return result;
   }
 
   var deep = 0;
   function walk(node) {
     switch (node.type) {
       case 'BinaryExpression':
-        var left  = walk(node.left);
-        var right = walk(node.right);
+        var left, right;
+        if (node.left.type === 'BinaryExpression' || node.right.type !== 'BinaryExpression') {
+          left  = walk(node.left);
+          right = walk(node.right);
+        } else {
+          right = walk(node.right);
+          left  = walk(node.left);
+        }
         return '__$__(' + left + ',' + '"' + node.operator + '",' + right + ')';
       case 'Identifier':
       case 'MemberExpression':
@@ -118,11 +126,29 @@
   });
   Object.defineProperty(Number.prototype, 'mat', {
     get: function() {
+      if (_valueOf === void 0) {
+        _valueOf = Number.prototype.valueOf;
+        Number.prototype.valueOf = function() {
+          var v = _valueOf.call(this);
+          ms.push(v);
+          return v;
+        };
+      }
+
       return this;
     }
   });
   Object.defineProperty(Number.prototype, 'vec', {
     get: function() {
+      if (_valueOf === void 0) {
+        _valueOf = Number.prototype.valueOf;
+        Number.prototype.valueOf = function() {
+          var v = _valueOf.call(this);
+          ms.push(v);
+          return v;
+        };
+      }
+
       return this;
     }
   });

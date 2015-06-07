@@ -4,13 +4,20 @@ Vector = function(elements, type) {
 
 Vector.create = function(dim, initVal, type) {
   var elements = [];
-  if (typeof dim == 'number') {
-    for (var i = 0; i < dim; i++) {
+  if (typeof dim === 'number') {
+    for (var i = dim - 1; i >= 0; --i) {
       elements[i] = initVal;
     }
   } else {
-    elements = dim;
-    type = initVal;
+    if (typeof dim[0] === 'number') {
+      elements = dim;
+      type = initVal;
+    } else {
+      for (var i = dim.length - 1; i >= 0; --i) {
+        elements[i] = dim[i][0];
+      }
+      type = Vector.COL;
+    }
   }
 
   return new Vector(elements, type);
@@ -43,7 +50,7 @@ Vector.prototype = {
    */
   toString: function() {
     var s = '';
-    for (var i = this.dim - 1; i >= 0; --i) {
+    for (var i = 0; i < this.dim; ++i) {
       s += this[i];
       if (this.type === Vector.COL) {
         s += "\n";

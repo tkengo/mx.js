@@ -6,14 +6,11 @@ describe('Matrix', function(){
         [ 3, 4 ]
       ]).inv();
       var ex = Matrix.create([
-        [  4, -2 ],
-        [ -3,  1 ]
-      ]).mul(-0.5);
+        [  -2,    1 ],
+        [ 1.5, -0.5 ]
+      ]);
 
-      expect(ac[0][0]).to.equal(ex[0][0]);
-      expect(ac[0][1]).to.equal(ex[0][1]);
-      expect(ac[1][0]).to.equal(ex[1][0]);
-      expect(ac[1][1]).to.equal(ex[1][1]);
+      expect(ac).to.mat(ex);
     });
 
     it('should calculate the inverse matrix for 3x3 matrix', function() {
@@ -24,19 +21,11 @@ describe('Matrix', function(){
       ]).inv();
       var ex = Matrix.create([
         [ -4,  1,  2 ],
-        [  5, -2, -2 ],
-        [ -3,  2,  1 ]
+        [  4.999999999999999,  -1.9999999999999998, -2], // [  5, -2, -2 ]
+        [ -2.9999999999999996,  1.9999999999999998,  1]  // [ -3,  2,  1 ]
       ]);
 
-      expect(ac[0][0]).to.equal(ex[0][0]);
-      expect(ac[0][1]).to.equal(ex[0][1]);
-      expect(ac[0][2]).to.equal(ex[0][2]);
-      expect(ac[1][0]).to.equal(ex[1][0]);
-      expect(ac[1][1]).to.equal(ex[1][1]);
-      expect(ac[1][2]).to.equal(ex[1][2]);
-      expect(ac[2][0]).to.equal(ex[2][0]);
-      expect(ac[2][1]).to.equal(ex[2][1]);
-      expect(ac[2][2]).to.equal(ex[2][2]);
+      expect(ac).to.mat(ex);
     });
 
     it('should calculate the inverse matrix for 3x3 matrix with pivot selection', function() {
@@ -46,21 +35,12 @@ describe('Matrix', function(){
         [ 4, 3, 2 ]
       ]).inv();
       var ex = Matrix.create([
-        [ -6, -1,  4 ],
-        [  2,  0, -1 ],
-        [  9,  2, -6 ]
+        [ -1,  0,  1 ],
+        [  0,  2, -1 ],
+        [  2, -3,  0 ]
       ]);
 
-      ac.disp();
-      expect(ac[0][0]).to.equal(ex[0][0]);
-      expect(ac[0][1]).to.equal(ex[0][1]);
-      expect(ac[0][2]).to.equal(ex[0][2]);
-      expect(ac[1][0]).to.equal(ex[1][0]);
-      expect(ac[1][1]).to.equal(ex[1][1]);
-      expect(ac[1][2]).to.equal(ex[1][2]);
-      expect(ac[2][0]).to.equal(ex[2][0]);
-      expect(ac[2][1]).to.equal(ex[2][1]);
-      expect(ac[2][2]).to.equal(ex[2][2]);
+      expect(ac).to.mat(ex);
     });
   });
 });

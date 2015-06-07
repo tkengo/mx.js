@@ -537,23 +537,40 @@ Matrix.prototype = {
       return undefined;
     }
 
-    var n = this.rows;
-    var m = this.clone();
-    var inv = Matrix.eye(m.rows);
-    var j, x, k;
+    var n   = this.rows;
+    var abs = Math.abs;
+    var src = this.clone();
+    var inv = Matrix.eye(src.rows);
+    var j, x, k, pivot, max, tmp;
 
     for (var i = 0; i < n; ++i) {
-      x = m[i][i];
-      for (j = 0; j < n; ++j) {
-        m[i][j]   /= x;
-        inv[i][j] /= x;
+      if (src[i][i] !== 1) {
+        pivot = max = -1;
+        for (j = i; j !== n; ++j) {
+          k = abs(src[j][i]);
+          if (k > max) {
+            pivot = j;
+            max   = k;
+          }
+        }
+
+        if (i !== pivot) {
+          tmp = src[i]; src[i] = src[pivot]; src[pivot] = tmp;
+          tmp = inv[i]; inv[i] = inv[pivot]; inv[pivot] = tmp;
+        }
+
+        x = src[i][i];
+        for (j = 0; j < n; ++j) {
+          src[i][j] /= x;
+          inv[i][j] /= x;
+        }
       }
 
       for (j = 0; j < n; ++j) {
         if (i != j) {
-          x = m[j][i];
+          x = src[j][i];
           for (k = 0; k < n; ++k) {
-            m[j][k]   -= m[i][k] * x;
+            src[j][k] -= src[i][k] * x;
             inv[j][k] -= inv[i][k] * x;
           }
         }
@@ -622,7 +639,7 @@ Matrix.prototype = {
       v = v.toMat();
     }
     if (this.cols !== v.rows) {
-      return undefined;
+      throw new Error('cols of the left matrix and rows of the right matrix is not equal');
     }
 
     var elements = new Array(this.rows);
@@ -649,7 +666,12 @@ Matrix.prototype = {
         }
         elements[r] = row;
     }
-    return Matrix.create(elements);
+    var m = Matrix.create(elements);
+    if (m.rows === 1 && m.cols === 1) {
+      return m[0][0];
+    } else {
+      return m;
+    }
   },
 
   div: function(v) {
@@ -827,26 +849,42 @@ Matrix.prototype = {
     return sum;
   },
 
-  sumCols: function() {
-    var sum = new Array(this.cols), r;
-    for (var c = this.cols - 1; c >= 0; --c) {
-      sum[c] = 0;
+  sumCols: function(col) {
+    if (col === void 0) {
+      var sum = 0;
       for (r = this.rows - 1; r >= 0; --r) {
-        sum[c] += this[r][c];
+        sum += this[r][col];
       }
+      return sum;
+    } else {
+      var sum = new Array(this.cols), r;
+      for (var c = this.cols - 1; c >= 0; --c) {
+        sum[c] = 0;
+        for (r = this.rows - 1; r >= 0; --r) {
+          sum[c] += this[r][c];
+        }
+      }
+      return Vector.create(sum, Vector.ROW);
     }
-    return Vector.create(sum, Vector.ROW);
   },
 
-  sumRows: function() {
-    var sum = new Array(this.rows), c;
-    for (var r = this.rows - 1; r >= 0; --r) {
-      sum[r] = 0;
-      for (c = this.cols - 1; c >= 0; --c) {
-        sum[r] += this[r][c];
+  sumRows: function(row) {
+    if (row === void 0) {
+      var sum = 0;
+      for (var c = this.cols - 1; c >= 0; --c) {
+        sum += this[row][c];
       }
+      return sum;
+    } else {
+      var sum = new Array(this.rows), c;
+      for (var r = this.rows - 1; r >= 0; --r) {
+        sum[r] = 0;
+        for (c = this.cols - 1; c >= 0; --c) {
+          sum[r] += this[r][c];
+        }
+      }
+      return Vector.create(sum, Vector.COL);
     }
-    return Vector.create(sum, Vector.COL);
   },
 
   flipRows: function() {
