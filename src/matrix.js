@@ -850,7 +850,7 @@ Matrix.prototype = {
   },
 
   sumCols: function(col) {
-    if (col === void 0) {
+    if (col !== void 0) {
       var sum = 0;
       for (r = this.rows - 1; r >= 0; --r) {
         sum += this[r][col];
@@ -869,7 +869,7 @@ Matrix.prototype = {
   },
 
   sumRows: function(row) {
-    if (row === void 0) {
+    if (row !== void 0) {
       var sum = 0;
       for (var c = this.cols - 1; c >= 0; --c) {
         sum += this[row][c];
@@ -943,28 +943,28 @@ Matrix.prototype = {
 
   stdCols: function() {
     var mean = this.meanCols();
-    var std = new Array(this.cols), r, tmp;
+    var std = new Array(this.cols), r, tmp, sum;
     for (var c = this.cols - 1; c >= 0; --c) {
-      std[c] = 0;
+      sum = 0;
       for (r = this.rows - 1; r >= 0; --r) {
-        tmp = mean[c] - this[r][c];
-        std[c] += tmp * tmp;
+        tmp = this[r][c] - mean[c];
+        sum += tmp * tmp;
       }
-      std[c] /= this.cols;
+      std[c] = Math.sqrt(sum / this.rows);
     }
     return Vector.create(std, Vector.ROW);
   },
 
   stdRows: function() {
     var mean = this.meanRows();
-    var std = new Array(this.rows), c, tmp;
+    var std = new Array(this.rows), c, tmp, sum;
     for (var r = this.rows - 1; r >= 0; --r) {
-      std[r] = 0;
+      sum = 0;
       for (c = this.cols - 1; c >= 0; --c) {
-        tmp = mean[c] - this[r][c];
-        std[r] += tmp * tmp;
+        tmp = this[r][c] - mean[c];
+        sum += tmp * tmp;
       }
-      std[r] /= this.cols;
+      std[r] = Math.sqrt(sum / this.cols);
     }
     return Vector.create(std, Vector.COL);
   },
