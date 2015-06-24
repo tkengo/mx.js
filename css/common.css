@@ -57,7 +57,7 @@ h1 {
   text-align: center;
   margin: 20px 0;
   color: #faf2e4;
-  text-shadow: 3px 3px #2f283e;
+  text-shadow: 2px 2px #2f283e;
 }
 
 .about {
@@ -65,8 +65,10 @@ h1 {
   text-align: center;
 }
 
-h2 {
+.h2 {
   font-size: 30px;
+  font-family: 'Bad Script', cursive;
+  font-weight: 400;
   text-align: center;
   margin: 30px 0 20px;
   color: #ffe5b6;

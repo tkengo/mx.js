@@ -7,6 +7,7 @@
   <title>mx.js</title>
   <meta name="Description" content="行列、ベクトルの演算を行うためのシンプルなJavaScriptのライブラリです。">
   <link href="./css/common.css" media="all" rel="stylesheet" type="text/css">
+  <link href='http://fonts.googleapis.com/css?family=Bad+Script' rel='stylesheet' type='text/css'>
 </head>
 <body>
 
@@ -24,20 +25,20 @@
 
 <div class="container">
   <section>
-    <h2>Introduction</h2>
+    <h2 class="h2">Introduction</h2>
     <p>mx.jsでは行列と行列、行列とベクトル、ベクトルとベクトルの演算が出来るのはもちろんのこと、要素へアクセスするためのインターフェースや、行列の転置、行列式の計算、行列の分解、内積、平均、標準偏差、などもサポートしています。
   線形代数だけでなく、統計学の計算にも利用することができ、応用範囲は様々です。</p>
   </section>
 
   <section>
-    <h2>Getting Started</h2>
+    <h2 class="h2">Getting Started</h2>
     <div class="highlight"><pre><code>&lt;<span class="element">script</span> type=<span class="value">"text/script"</span> src=<span class="value">"CDNのURL"</span>&gt;&lt;/<span class="element">script</span>&gt;</code></pre></div>
     <p class="center-text">or</p>
     <div class="highlight"><pre><code><span class="dollar">&amp;</span> npm install mx.js</code></pre></div>
   </section>
 
   <section>
-    <h2>Example</h2>
+    <h2 class="h2">Example</h2>
     <p class="mg-bottom">このようにして新しい行列またはベクトルを作ることができます。</p>
     <div class="highlight"><pre><code><span class="variable">var</span> m1 = Matrix.create(<span class="value">3, 3, 1</span>); <span class="comment-out">// 初期値が1の3x3行列を作ります。</span>
 <span class="variable">var</span> m2 = Matrix.create([ <span class="value">1, 2, 3</span> ]); <span class="comment-out">// 1x3行列を作ります</span>
