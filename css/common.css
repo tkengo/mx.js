@@ -16,6 +16,39 @@ body {
   margin: 0 auto;
 }
 
+.github-ribbon {
+  position: absolute;
+  top: 0;
+  right: 0;
+  border: 0;
+  width: 149px;
+  height: 149px;
+}
+
+nav {
+  font-size: 13px;
+  font-weight: 300;
+  letter-spacing: 1px;
+  padding: 20px;
+}
+
+nav a {
+  color: #9c96ab;
+  text-decoration: none;
+}
+
+nav li {
+  display: inline;
+  margin-right: 16px;
+}
+
+nav .here {
+  color: #fff;
+  padding: 5px 10px;
+  background: #35303f;
+  border-radius: 4px;
+}
+
 .header-inner {
   width: 770px;
   margin: 0 auto;
@@ -55,7 +88,7 @@ a:hover {
 h1 {
   font-size: 140px;
   text-align: center;
-  margin: 20px 0;
+  margin: 0 0 20px;
   color: #faf2e4;
   text-shadow: 2px 2px #2f283e;
 }
@@ -75,7 +108,9 @@ h1 {
 }
 
 code {
-  font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  font-family: "Source Code Pro", "sans-serif";
+  font-size: 14px;
+  white-space: pre-wrap;
 }
 
 .highlight {
