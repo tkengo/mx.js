@@ -1,1 +1,76 @@
-mx.js
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <meta name="author" content="@tkengo">
+  <title>mx.js</title>
+  <meta name="Description" content="行列、ベクトルの演算を行うためのシンプルなJavaScriptのライブラリです。">
+  <link href="./css/common.css" media="all" rel="stylesheet" type="text/css">
+  <link href='http://fonts.googleapis.com/css?family=Bad+Script' rel='stylesheet' type='text/css'>
+  <meta property="og:title" content="mx.js">
+  <meta property="og:description" content="行列、ベクトルの演算を行うためのシンプルなJavaScriptのライブラリです。">
+  <meta property="og:url" content="http://tkengo.github.io/mx.js">
+  <meta property="og:image" content="http://tkengo.github.io/mx.js/images/ogp.png">
+</head>
+<body>
+
+<header>
+  <a href="https://github.com/tkengo/mx.js" class="github-ribbon">
+    <img class="github-ribbon" src="http://aral.github.com/fork-me-on-github-retina-ribbons/right-grey@2x.png" alt="Fork me on GitHub">
+  </a>
+  <!--
+  <nav>
+    <ul>
+      <li class="here">Introduction</li>
+      <li><a href="#">API Reference</a></li>
+      <li><a href="#">Change Logs</a></li>
+    </ul>
+  </nav>
+  -->
+  <div class="header-inner">
+    <h1 class="logo"><img src="./images/logo.svg" alt="mx.js" width="100%"></h1>
+    <p class="about">行列、ベクトルの演算を行うためのシンプルなJavaScriptのライブラリです。</p>
+  </div>
+</header>
+
+<div class="container">
+  <section>
+    <h2 class="h2">Introduction</h2>
+    <p>mx.jsでは行列と行列、行列とベクトル、ベクトルとベクトルの演算が出来るのはもちろんのこと、要素へアクセスするためのインターフェースや、行列の転置、行列式の計算、行列の分解、内積、平均、標準偏差、などもサポートしています。
+  線形代数だけでなく、統計学の計算にも利用することができ、応用範囲は様々です。</p>
+  </section>
+
+  <section>
+    <h2 class="h2">Getting Started</h2>
+    <div class="highlight"><pre><code>&lt;<span class="element">script</span> type=<span class="value">"text/script"</span> src=<span class="value">"CDNのURL"</span>&gt;&lt;/<span class="element">script</span>&gt;</code></pre></div>
+    <p class="center-text">or</p>
+    <div class="highlight"><pre><code><span class="dollar">&amp;</span> npm install mx.js</code></pre></div>
+  </section>
+
+  <section>
+    <h2 class="h2">Example</h2>
+    <p class="mg-bottom">このようにして新しい行列またはベクトルを作ることができます。</p>
+    <div class="highlight"><pre><code><span class="variable">var</span> m1 = Matrix.create(<span class="value">3, 3, 1</span>); <span class="comment-out">// 初期値が1の3x3行列を作ります。</span>
+<span class="variable">var</span> m2 = Matrix.create([ <span class="value">1, 2, 3</span> ]); <span class="comment-out">// 1x3行列を作ります</span>
+<span class="variable">var</span> m3 = Matrix.create([ [ <span class="value">1, 2, 3</span> ], [ <span class="value">4, 5, 6</span> ], [ <span class="value">7, 8, 9</span> ] ]); <span class="comment-out">// 3x3行列を作ります。</span>
+<span class="variable">var</span> v1 = Vector.create(<span class="value">3, 1</span>); <span class="comment-out">// 初期値が1の3次元ベクトルを作ります</span>
+<span class="variable">var</span> v2 = Vector.create([ <span class="value">1, 2, 3</span> ]); <span class="comment-out">// 要素に1,2,3をもつ3次元ベクトルを作ります。</span>
+
+<span class="comment-out">// m1の各要素を2乗したものにm3の各要素を足して、その合計を計算します。</span>
+<span class="variable">var</span> sum = m1.pow(<span class="value">2</span>).add(<span class="value">m3</span>).sum();
+
+<span class="comment-out">// m1の1行目を行ベクトルとして取り出してv1との内積をとります。</span>
+<span class="variable">var</span> dot = m1.row(<span class="value">0</span>).dot(<span class="value">v1</span>);
+
+<span class="comment-out">// Mオペレータを使うと通常の四則演算記号を使って演算できます。</span>
+<span class="variable">var</span> sum = M(M(<span class="value">m1 ^ 2</span>) + m3).sum();</code></pre></div>
+  </section>
+
+  <footer>
+    &copy;&nbsp;Product design and development <a href="https://twitter.com/tkengo" target="_blank">@tkengo</a>, Website design <a href="https://twitter.com/keita_kawamoto" target="_blank">@keita_kawamoto</a>
+  </footer>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,158 @@
+html, body, header, footer, section, nav, h1, h2, ul, li, p, pre {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: "Helvetica Neue", "Helvetica", Helvetica, Arial, sans-serif;
+  color: #fffbf2;
+  font-size: 1em;
+  text-align: left;
+  background: #3A3449;
+}
+
+.container {
+  max-width: 770px;
+  margin: 0 auto;
+  padding: 0 15px;
+}
+
+a.github-ribbon {
+  margin: 0;
+  padding: 0;
+}
+
+.github-ribbon {
+  position: absolute;
+  top: 0;
+  right: 0;
+  border: 0;
+  width: 149px;
+  height: 149px;
+}
+
+@media screen and (max-width: 600px) {
+  .github-ribbon {
+    width: 90px;
+    height: 90px;
+  }
+}
+
+nav {
+  font-size: 0.8em;
+  font-weight: 300;
+  letter-spacing: 1px;
+  padding: 20px;
+}
+
+nav a {
+  color: #9c96ab;
+  text-decoration: none;
+}
+
+nav li {
+  display: inline;
+  margin-right: 16px;
+}
+
+nav .here {
+  color: #fff;
+  padding: 5px 10px;
+  background: #35303f;
+  border-radius: 4px;
+}
+
+.header-inner {
+  max-width: 770px;
+  margin: 50px auto 0;
+  padding-bottom: 30px;
+  border-bottom: 2px dashed #4e495a;
+}
+
+p {
+  line-height: 1.8em;
+}
+
+a {
+  color: #ffd474;
+  text-decoration: none;
+  margin: 0 5px;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.mg-top {
+  margin-top: 20px;
+}
+
+.mg-bottom {
+  margin-bottom: 20px;
+}
+
+.center-text {
+  font-size: 1.3em;
+  text-align: center;
+  margin: 20px 0;
+}
+
+.logo {
+  width: 500px;
+  margin: 0 auto 30px;
+}
+
+@media screen and (max-width: 500px) {
+  .logo {
+    width: 80%;
+  }
+}
+
+.about {
+  color: #fff0d3;
+  text-align: center;
+  padding: 0 15px;
+}
+
+.h2 {
+  font-size: 1.8em;
+  font-family: 'Bad Script', cursive;
+  font-weight: 400;
+  text-align: center;
+  margin: 30px 0 20px;
+  color: #ffe5b6;
+}
+
+code {
+  font-family: "Source Code Pro", Helvetica, Arial, sans-serif;
+  font-size: 0.9em;
+  white-space: pre-wrap;
+}
+
+.highlight {
+  background: #2b2735;
+  padding: 15px 20px;
+  line-height: 1.8em;
+  border-radius: 4px;
+}
+  .highlight .comment-out {
+    color: #928f99;
+  }
+  .highlight .variable {
+    color: #be7744;
+  }
+  .highlight .value {
+    color: #f5ddce;
+  }
+  .highlight .element {
+    color: #8b8cac;
+  }
+  .highlight .dollar {
+    color: #82868f;
+  }
+
+footer {
+  margin: 40px 0;
+  font-size: 0.8em;
+  text-align: center;
+}
