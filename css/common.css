@@ -51,7 +51,7 @@ nav .here {
 
 .header-inner {
   width: 770px;
-  margin: 0 auto;
+  margin: 50px auto 0;
   padding-bottom: 30px;
   border-bottom: 2px dashed #4e495a;
 }
@@ -85,12 +85,9 @@ a:hover {
   margin: 20px 0;
 }
 
-h1 {
-  font-size: 140px;
-  text-align: center;
-  margin: 0 0 20px;
-  color: #faf2e4;
-  text-shadow: 2px 2px #2f283e;
+.logo {
+  width: 500px;
+  margin: 0 auto 25px;
 }
 
 .about {
