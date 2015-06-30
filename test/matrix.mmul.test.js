@@ -1,16 +1,16 @@
 describe('Matrix', function(){
   describe('#mmul', function(){
     it('should calculate the multiplation with matrix and matrix', function() {
-      var ac = Matrix.create([
+      var actual = Matrix.create([
         [ 1, 2 ],
         [ 3, 4 ]
       ]);
-      var ex = Matrix.create([
+      var expected = Matrix.create([
         [  7, 10 ],
         [ 15, 22 ]
       ]);
 
-      expect(ac.mmul(ac)).to.mat(ex);
+      expect(actual.mmul(actual)).to.mat(expected);
     });
   });
 
@@ -21,11 +21,11 @@ describe('Matrix', function(){
         [ 1, 0 ],
         [ 0, 1 ]
       ]);
-      var ex = Matrix.create([
+      var expected = Matrix.create([
         [ 2, 3 ]
       ]);
 
-      expect(v.mmul(m)).to.mat(ex);
+      expect(v.mmul(m)).to.mat(expected);
     });
   });
 });

@@ -35,12 +35,10 @@
 
   var ms = [];
   Matrix.prototype.valueOf = function() {
-    ms.push(this);
-    return ms.length + 1;
+    return this[0][0];
   };
   Vector.prototype.valueOf = function() {
-    ms.push(this);
-    return ms.length + 1;
+    return this[0];
   };
 
   var fs;
@@ -76,6 +74,8 @@
       _valueOf = void 0;
     }
     ms = [];
+    Matrix.prototype.valueOf = matrixValueOf;
+    Vector.prototype.valueOf = vectorValueOf;
     return result;
   }
 
@@ -108,20 +108,23 @@
     }
   }
 
+  function push() {
+    ms.push(this);
+    return ms.length + 1;
+  }
+
+  var matrixValueOf;
+  var vectorValueOf;
   var g = Function('return this')();
   Object.defineProperty(g, 'M', {
     enumerable: false,
     get: function() {
+      matrixValueOf = Matrix.prototype.valueOf;
+      vectorValueOf = Vector.prototype.valueOf;
+      Matrix.prototype.valueOf = push;
+      Vector.prototype.valueOf = push;
+
       return M;
-    }
-  });
-  Object.defineProperty(g, 'S', {
-    enumerable: false,
-    get: function() {
-      return function(scalar) {
-        ms.push(scalar);
-        return ms.length + 1;
-      };
     }
   });
   Object.defineProperty(Number.prototype, 'mat', {

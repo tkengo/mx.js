@@ -3,6 +3,9 @@ Vector = function(elements, type) {
 };
 
 Vector.create = function(dim, initVal, type) {
+  dim     = dim     || 0;
+  initVal = initVal || 0;
+
   var elements = [];
   if (typeof dim === 'number') {
     for (var i = dim - 1; i >= 0; --i) {
@@ -23,6 +26,10 @@ Vector.create = function(dim, initVal, type) {
   return new Vector(elements, type);
 };
 
+Vector.empty = function(type) {
+  return Vector.create(0, 0, type);
+};
+
 Vector.zeros = function(dim, type) {
   return Vector.create(dim, 0, type);
 };
@@ -38,7 +45,7 @@ Vector.rand = function(dim, type, f) {
 };
 
 Vector.randn = function(dim, type) {
-  return Matrix.rand(dim, type, Mx.Utils.randn);
+  return Vector.rand(dim, type, Mx.Utils.randn);
 };
 
 Vector.ROW = 1;
@@ -72,9 +79,12 @@ Vector.prototype = {
     return new Vector(this.flat(), this.type);
   },
 
-  toArray: function() {
-    var elements = [];
-    for (var i = 0, dim = this.dim; i < dim; ++i) {
+  toArray: function(start, end) {
+    start = start || 0;
+    end   = end   || this.dim;
+
+    var elements = new Array(dim);
+    for (var i = start, dim = Math.min(end, this.dim); i < dim; ++i) {
       elements[i] = this[i];
     }
     return elements;
@@ -89,6 +99,22 @@ Vector.prototype = {
         elements[i] = [ this[i] ];
       }
       return Matrix.create(elements);
+    }
+  },
+
+  toRowVector: function() {
+    if (this.type === Vector.ROW) {
+      return this.clone();
+    } else {
+      return this.t();
+    }
+  },
+
+  toColVector: function() {
+    if (this.type === Vector.COL) {
+      return this.clone();
+    } else {
+      return this.t();
     }
   },
 
@@ -115,6 +141,63 @@ Vector.prototype = {
     for (var i = 0, dim = this.dim; i < dim; ++i) {
       this[i] = elements[i];
     }
+
+    return this;
+  },
+
+  equals: function(v) {
+    if (this.rows !== v.rows || this.cols !== v.cols) {
+      return false;
+    }
+
+    var c;
+    for (var i = this.dim - 1; i >= 0; --i) {
+      if (this[i] !== v[i]) {
+        return false;
+      }
+    }
+
+    return true;
+  },
+
+  norm: function() {
+    return Math.sqrt(this.clone().pow(2).sum());
+  },
+
+  normalize: function() {
+    return this.div(this.norm());
+  },
+
+  hcat: function() {
+   var mat = this.toMat();
+   var catMat = mat.hcat.apply(mat, arguments);
+
+    if (this.type === Vector.ROW) {
+      return catMat.toVec();
+    } else {
+      return catMat;
+    }
+  },
+
+  vcat: function() {
+    var mat = this.toMat();
+    var catMat = mat.vcat.apply(mat, arguments);
+
+    if (this.type === Vector.COL) {
+      return catMat.toVec();
+    } else {
+      return catMat;
+    }
+  },
+
+  append: function(value) {
+    return this.insert(this.dim, value);
+  },
+
+  insert: function(dim, value) {
+    var array = this.flat();
+    array.splice(dim, 0, value);
+    return this.set(array, this.type);
   },
 
   remove: function(dim) {
@@ -136,22 +219,24 @@ Vector.prototype = {
     return this;
   },
 
-  flat: function() {
-    return this.toArray();
+  flat: function(start, end) {
+    return this.toArray(start, end);
   },
 
   t: function() {
-    if (this.type == Vector.ROW) {
-      this.rows = this.cols;
-      this.cols = 1;
-      this.type = Vector.COL;
+    var t = this.clone();
+
+    if (t.type == Vector.ROW) {
+      t.rows = t.cols;
+      t.cols = 1;
+      t.type = Vector.COL;
     } else {
-      this.cols = this.rows;
-      this.rows = 1;
-      this.type = Vector.ROW;
+      t.cols = t.rows;
+      t.rows = 1;
+      t.type = Vector.ROW;
     }
 
-    return this;
+    return t;
   },
 
   add: function(v) {
@@ -242,6 +327,21 @@ Vector.prototype = {
     return dot;
   },
 
+  /**
+   * Note that cross product is defined only if vector is three dimensions.
+   */
+  cross: function(v) {
+    if (this.dim !== 3 || v.dim !== 3) {
+      throw new Error("Can't define cross product because vector dimension is not three dims.");
+    }
+
+    return Vector.create([
+      this[1] * v[2] - this[2] * v[1],
+      this[2] * v[0] - this[0] * v[2],
+      this[0] * v[1] - this[1] * v[0]
+    ], this.type);
+  },
+
   sort: function(order) {
     var f = (order || 'asc') == 'asc' ?
             function(a, b) { return a - b; } :
@@ -279,5 +379,6 @@ Vector.prototype = {
     return sum;
   }
 };
+Vector.fn = Vector.prototype;
 
 asMath.call(Vector.prototype);

@@ -60,6 +60,11 @@ Matrix.create = function(rows, cols, initVal) {
         }
         elements[r] = row;
       }
+    } else {
+      var m = new Matrix();
+      m.rows = rows;
+      m.cols = cols;
+      return m;
     }
   } else {
     rows = rows || [];
@@ -284,7 +289,14 @@ Matrix.prototype = {
    * Vector.COL.
    */
   toVec: function(type) {
-    type = type || Vector.COL;
+    if (type === void 0) {
+      if (this.rows === 1) {
+        return this.row(0);
+      } else if (this.cols === 1) {
+        return this.col(0);
+      }
+      type = Vector.COL;
+    }
 
     var vectors, r, elements;
     if (type === Vector.COL) {
@@ -311,6 +323,10 @@ Matrix.prototype = {
 
   isEmpty: function() {
     return this.rows === 0;
+  },
+
+  getElementCount: function() {
+    return this.rows * this.cols;
   },
 
   /**
@@ -362,6 +378,72 @@ Matrix.prototype = {
     return this;
   },
 
+  hcat: function() {
+    var errorMessage = "Can't concat horizontal because of each objects have different rows";
+    var elements = this.toArray();
+    var len = arguments.length;
+    var all, i, argument;
+
+    for (var r = 0, rows = this.rows; r < rows; ++r) {
+      all = new Array(len);
+      for (i = 0; i < len; ++i) {
+        argument = arguments[i];
+
+        if (typeof argument === 'number') {
+          all[i] = argument;
+        } else if (argument instanceof Array || argument instanceof Vector) {
+          if (argument[r] === void 0) {
+            throw new Error(errorMessage);
+          }
+          all[i] = argument[r];
+        } else if (argument instanceof Matrix) {
+          if (argument[r] === void 0) {
+            throw new Error(errorMessage);
+          }
+          all[i] = argument[r].concat();
+        }
+      }
+      var row = elements[r];
+      elements[r] = row.concat.apply(row, all);
+    }
+
+    return Matrix.create(elements);
+  },
+
+  vcat: function() {
+    var elements = this.toArray();
+    var len = arguments.length;
+    var index = elements.length;
+    var errorMessage = "Can't concat vectical because of each objects have different cols";
+
+    for (var i = 0; i < len; ++i) {
+      var argument = arguments[i];
+      if (typeof argument === 'number') {
+        elements[index++] = Mx.Utils.generateFlatArray(this.cols, argument);
+      } else if (argument instanceof Array) {
+        if (this.cols !== argument.length) {
+          throw new Error(errorMessage);
+        }
+        elements[index++] = argument;
+      } else if (argument instanceof Vector) {
+        if (this.cols !== argument.cols) {
+          throw new Error(errorMessage);
+        }
+        elements[index++] = argument.flat();
+      } else {
+        if (this.cols !== argument.cols) {
+          throw new Error(errorMessage);
+        }
+        var matArray = argument.toArray();
+        for (var r = 0, rows = matArray.length; r < rows; ++r) {
+          elements[index++] = matArray[r].concat();
+        }
+      }
+    }
+
+    return Matrix.create(elements);
+  },
+
   setCol: function(index, col) {
     if (typeof col == 'number') {
       for (var r = this.rows - 1; r >= 0; --r) {
@@ -397,18 +479,13 @@ Matrix.prototype = {
   },
 
   insertRow: function(index, row) {
-    var i;
-    if (typeof row == 'number') {
-      var tmp = new Array(this.cols);
-      for (i = this.cols - 1; i >= 0; --i) {
-        tmp[i] = row;
-      }
-      row = tmp;
+    if (typeof row === 'number') {
+      row = Mx.Utils.generateFlatArray(this.cols, row);
     } else if (row.dim) {
       row = row.toArray();
     }
 
-    for (i = this.rows++; i > index; --i) {
+    for (var i = this.rows++; i > index; --i) {
       this[i] = this[i - 1];
     }
     this[index] = row;
@@ -437,6 +514,14 @@ Matrix.prototype = {
     }
 
     return this;
+  },
+
+  appendRow: function(row) {
+    return this.insertRow(this.rows, row);
+  },
+
+  appendCol: function(col) {
+    return this.insertCol(this.cols, col);
   },
 
   removeCol: function(col) {
@@ -503,7 +588,7 @@ Matrix.prototype = {
       elements[c] = row;
     }
 
-    return this.set(elements);
+    return Matrix.create(elements);
   },
 
   det: function() {
@@ -635,9 +720,12 @@ Matrix.prototype = {
   },
 
   mmul: function(v) {
-    if (v instanceof Vector) {
+    if (typeof v === 'number') {
+      v = Matrix.create([ v ]);
+    } else if (v instanceof Vector) {
       v = v.toMat();
     }
+
     if (this.cols !== v.rows) {
       throw new Error('cols of the left matrix and rows of the right matrix is not equal');
     }
@@ -666,12 +754,7 @@ Matrix.prototype = {
         }
         elements[r] = row;
     }
-    var m = Matrix.create(elements);
-    if (m.rows === 1 && m.cols === 1) {
-      return m[0][0];
-    } else {
-      return m;
-    }
+    return Matrix.create(elements);
   },
 
   div: function(v) {
@@ -1013,5 +1096,6 @@ Matrix.prototype = {
     return [ l, u ];
   }
 };
+Matrix.fn = Matrix.prototype;
 
-asMath.call(Matrix.prototype);
+asMath.call(Matrix.fn);

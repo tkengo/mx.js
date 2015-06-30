@@ -47,6 +47,14 @@ Mx.Utils = {
     }
   },
 
+  generateFlatArray: function(dim, initVal) {
+    var array = new Array(dim);
+    for (var i = dim - 1; i >= 0; --i) {
+      array[i] = initVal;
+    }
+    return array;
+  },
+
   sequence: function(from, to) {
     var size = to - from + 1;
     var sequence = new Array(size);
