@@ -124,7 +124,7 @@ a:hover {
 }
 
 code {
-  font-family: "Source Code Pro", "sans-serif";
+  font-family: "Source Code Pro", Helvetica, Arial, sans-serif;
   font-size: 0.9em;
   white-space: pre-wrap;
 }
